@@ -57,8 +57,8 @@ public class Ball {
 	 * based on the specified elapsed time since the last update.
 	 * @param deltaNanoTime the number of nanoseconds that have transpired since the last update
 	 */
-	public void updatePosition (long deltaNanoTime) {
-		final String colW = collisionWallOrPaddle();
+	public void updatePosition (long deltaNanoTime, Paddle paddle) {
+		final String colW = collisionWallOrPaddle(paddle);
 
 		if (colW != null)
 			changeVelocity(colW);
@@ -80,31 +80,32 @@ public class Ball {
 	}
 
 	private void changeVelocity(String wall) {
-		if (wall.equals("R")) { // if there is a collision with the right wall
+		if (wall.equals("R") || wall.equals("L")) { // if there is a collision with the right wall
 			vx = -vx;
-		}
-		if (wall.equals("L")) { // if there is a collision with the left wall
-			vx = -vx;
-		}
-		if (wall.equals("U")) { // if there is a collision with the upper wall
-			vy = -vy;
-		}
-		if (wall.equals("D")) { // if there is a collision with the down wall
+		} else if (wall.equals("U") || wall.equals("D")) { // if there is a collision with the upper wall
 			vy = -vy;
 		}
 	}
 
-	private String collisionWallOrPaddle() {
-		if (x + BALL_RADIUS >= GameImpl.WIDTH) { // right wall
+	private String collisionWallOrPaddle(Paddle paddle) {
+	    if (y + BALL_RADIUS <= (paddle.getY() + paddle.PADDLE_HEIGHT/2)
+                && y + BALL_RADIUS >= (paddle.getY() - paddle.PADDLE_WIDTH/2)
+                && x <= (paddle.getX() + paddle.PADDLE_WIDTH/2)
+                && x >= (paddle.getX() - paddle.PADDLE_WIDTH/2)) { // the bottom of the ball collides with the paddle
+	        return "L";
+        }
+        if (y - BALL_RADIUS <= (paddle.getY() + paddle.PADDLE_HEIGHT/2)
+                && y - BALL_RADIUS >= (paddle.getY() - paddle.PADDLE_WIDTH/2)
+                && x <= (paddle.getX() + paddle.PADDLE_WIDTH/2)
+                && x >= (paddle.getX() - paddle.PADDLE_WIDTH/2)) { // the top of the ball collides with the paddle
+            return "U";
+        } else if (x + BALL_RADIUS >= GameImpl.WIDTH) { // right wall
 			return "R";
-		}
-		if (x - BALL_RADIUS <= 0) { // left wall
+		} else if (x - BALL_RADIUS <= 0) { // left wall
 			return "L";
-		}
-		if (y + BALL_RADIUS >= GameImpl.HEIGHT) { // upper wall
+		}else if (y + BALL_RADIUS >= GameImpl.HEIGHT) { // upper wall
 			return "U";
-		}
-		if (y - BALL_RADIUS <= 0) { // down wall
+		} else if (y - BALL_RADIUS <= 0) { // down wall
 			return "D";
 		}
 		return null;
