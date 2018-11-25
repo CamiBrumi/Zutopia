@@ -16,18 +16,22 @@ public class Ball {
 	/**
 	 * The initial velocity of the ball in the x direction.
 	 */
-	public static final double INITIAL_VX = 1e-7;
+	public static final double INITIAL_VX = 4*1e-7;
 	/**
 	 * The initial velocity of the ball in the y direction.
 	 */
-	public static final double INITIAL_VY = 1e-7;
+	public static final double INITIAL_VY = 4*1e-7;
 
 	// Instance variables
 	// (x,y) is the position of the center of the ball.
 	private double x, y;
 	private double vx, vy;
 	private Circle circle;
-	//private final double boxCornerCalcu = BALL_RADIUS * sqrt(2);
+	private boolean vxChangedLastTime;
+	private boolean vyChangedLastTime;
+	private int counter; // TODO: 24/11/2018 eliminate this variable . only for prints
+	private double d; // distance between the points
+	private double xCol, yCol; //x and y of the last collision
 
 	/**
 	 * @return the Circle object that represents the ball on the game board.
@@ -50,6 +54,10 @@ public class Ball {
 		circle.setLayoutX(x - BALL_RADIUS);
 		circle.setLayoutY(y - BALL_RADIUS);
 		circle.setFill(Color.BLACK);
+
+		vxChangedLastTime = false;
+		vyChangedLastTime = false;
+		counter = 0;
 	}
 
 	/**
@@ -60,7 +68,7 @@ public class Ball {
 	public void updatePosition (long deltaNanoTime, Paddle paddle) {
 		final String colW = collisionWallOrPaddle(paddle);
 
-		if (colW != null)
+		if (!colW.equals(""))
 			changeVelocity(colW);
 
 		double dx = vx * deltaNanoTime;
@@ -80,34 +88,66 @@ public class Ball {
 	}
 
 	private void changeVelocity(String wall) {
-		if (wall.equals("R") || wall.equals("L")) { // if there is a collision with the right wall
+		if (wall.equals("V")) {
+			if (!vxChangedLastTime) {
+				vx = -vx;
+				vxChangedLastTime = true;
+			} else {
+				vxChangedLastTime = false;
+			}
+		} else if (wall.equals("H")) {
+			if (!vyChangedLastTime) {
+				vy = -vy;
+				vyChangedLastTime = true;
+			} else {
+				vyChangedLastTime = false;
+			}
+		} else { // wall.equals("VH")
 			vx = -vx;
-		} else if (wall.equals("U") || wall.equals("D")) { // if there is a collision with the upper wall
+			vy = -vy;
+		}
+
+
+		if (wall.equals("V")) { // if there is a collision with the right wall
+			vx = -vx;
+
+		} else if ( wall.equals("H")) { // if there is a collision with the upper wall
+			vy = -vy;
+
+		} else { // wall.equals("VH")
+			vx = -vx;
 			vy = -vy;
 		}
 	}
 
 	private String collisionWallOrPaddle(Paddle paddle) {
-	    if (y + BALL_RADIUS <= (paddle.getY() + paddle.PADDLE_HEIGHT/2)
-                && y + BALL_RADIUS >= (paddle.getY() - paddle.PADDLE_WIDTH/2)
-                && x <= (paddle.getX() + paddle.PADDLE_WIDTH/2)
-                && x >= (paddle.getX() - paddle.PADDLE_WIDTH/2)) { // the bottom of the ball collides with the paddle
-	        return "L";
-        }
-        if (y - BALL_RADIUS <= (paddle.getY() + paddle.PADDLE_HEIGHT/2)
-                && y - BALL_RADIUS >= (paddle.getY() - paddle.PADDLE_WIDTH/2)
-                && x <= (paddle.getX() + paddle.PADDLE_WIDTH/2)
-                && x >= (paddle.getX() - paddle.PADDLE_WIDTH/2)) { // the top of the ball collides with the paddle
+	    /*if ((y + BALL_RADIUS <= (paddle.getY() - paddle.PADDLE_HEIGHT/2))
+                && (y + BALL_RADIUS >= (paddle.getY() + paddle.PADDLE_HEIGHT/2))
+                && (x <= (paddle.getX() + paddle.PADDLE_WIDTH/2))
+                && (x >= (paddle.getX() - paddle.PADDLE_WIDTH/2))) { // the bottom of the ball collides with the paddle
+	        System.out.println("DP");
+	        return "D";
+        } else if ((y - BALL_RADIUS <= (paddle.getY() + paddle.PADDLE_HEIGHT/2))
+                && (y - BALL_RADIUS >= (paddle.getY() - paddle.PADDLE_HEIGHT/2))
+                && (x <= (paddle.getX() + paddle.PADDLE_WIDTH/2))
+                && (x >= (paddle.getX() - paddle.PADDLE_WIDTH/2))) { // the top of the ball collides with the paddle
+            System.out.println("UP");
             return "U";
-        } else if (x + BALL_RADIUS >= GameImpl.WIDTH) { // right wall
-			return "R";
-		} else if (x - BALL_RADIUS <= 0) { // left wall
-			return "L";
-		}else if (y + BALL_RADIUS >= GameImpl.HEIGHT) { // upper wall
-			return "U";
-		} else if (y - BALL_RADIUS <= 0) { // down wall
-			return "D";
+        }*/
+	    String collision = "";
+        if (x + BALL_RADIUS >= GameImpl.WIDTH || x - BALL_RADIUS <= 0) { // a vertical wall
+            //System.out.println(counter++ + "V");
+			collision += "V";
 		}
-		return null;
+		if (y + BALL_RADIUS >= GameImpl.HEIGHT || y - BALL_RADIUS <= 0) { // a horizontal wall
+            //System.out.println(counter++ + "H");
+			collision += "H";
+		}
+		if (!collision.equals(""))
+			d = 0;
+			xCol = x;
+			yCol = y;
+			System.out.println(collision);
+		return collision;
 	}
 }
