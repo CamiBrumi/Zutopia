@@ -29,8 +29,8 @@ public class Ball {
 	private Circle circle;
 	private boolean vxChangedLastTime;
 	private boolean vyChangedLastTime;
-	private int counter; // TODO: 24/11/2018 eliminate this variable . only for prints
-	private double d; // distance between the points
+	private int counter; // TODO: 24/11/2018 eliminate this variable . only for prints.
+	//private double d; // distance between the points
 	private double xCol, yCol; //x and y of the last collision
 
 	/**
@@ -58,6 +58,9 @@ public class Ball {
 		vxChangedLastTime = false;
 		vyChangedLastTime = false;
 		counter = 0;
+		//d = BALL_RADIUS;
+		xCol = -1;
+		yCol = -1;
 	}
 
 	/**
@@ -66,10 +69,19 @@ public class Ball {
 	 * @param deltaNanoTime the number of nanoseconds that have transpired since the last update
 	 */
 	public void updatePosition (long deltaNanoTime, Paddle paddle) {
-		final String colW = collisionWallOrPaddle(paddle);
+		double d = BALL_RADIUS/4.0;
+		if (xCol != -1 && yCol != -1) {
+			final double h = x - xCol;
+			final double v = y - yCol;
+			d = sqrt(h*h + v*v);
+		}
 
-		if (!colW.equals(""))
-			changeVelocity(colW);
+		if (d >= BALL_RADIUS/4.0) {
+			final String colW = collisionWallOrPaddle(paddle);
+
+			if (!colW.equals(""))
+				changeVelocity(colW);
+		}
 
 		double dx = vx * deltaNanoTime;
 		double dy = vy * deltaNanoTime;
@@ -80,15 +92,11 @@ public class Ball {
 		circle.setTranslateX(x - (circle.getLayoutX() + BALL_RADIUS));
 		circle.setTranslateY(y - (circle.getLayoutY() + BALL_RADIUS));
 
-		//Point pC = collisionPoint();
-
-		//if (pC != null)
-
 
 	}
 
 	private void changeVelocity(String wall) {
-		if (wall.equals("V")) {
+		/*if (wall.equals("V")) {
 			if (!vxChangedLastTime) {
 				vx = -vx;
 				vxChangedLastTime = true;
@@ -105,7 +113,7 @@ public class Ball {
 		} else { // wall.equals("VH")
 			vx = -vx;
 			vy = -vy;
-		}
+		}*/
 
 
 		if (wall.equals("V")) { // if there is a collision with the right wall
@@ -143,11 +151,11 @@ public class Ball {
             //System.out.println(counter++ + "H");
 			collision += "H";
 		}
-		if (!collision.equals(""))
-			d = 0;
+		if (!collision.equals("")) {
 			xCol = x;
 			yCol = y;
 			System.out.println(collision);
+		}
 		return collision;
 	}
 }
