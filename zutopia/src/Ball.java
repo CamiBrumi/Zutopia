@@ -33,6 +33,7 @@ public class Ball {
 	//private double d; // distance between the points
 	private double xCol, yCol; //x and y of the last collision
 	private String pastColWall;
+	private int nCollisionsBottomWall;
 
 	/**
 	 * @return the Circle object that represents the ball on the game board.
@@ -63,6 +64,7 @@ public class Ball {
 		xCol = -1;
 		yCol = -1;
 		pastColWall = "";
+		nCollisionsBottomWall = 0;
 	}
 
 	/**
@@ -71,11 +73,18 @@ public class Ball {
 	 *
 	 * @param deltaNanoTime the number of nanoseconds that have transpired since the last update
 	 */
-	public void updatePosition(long deltaNanoTime, Paddle paddle) {
-		
+	public GameImpl.GameState updatePosition(long deltaNanoTime, Paddle paddle) {
+
 		final String colW = collisionWallOrPaddle(paddle);
 		if (!colW.equals("")) {
 			if (!colW.equals(pastColWall)) {
+
+				if (colW.equals("D")) {
+					nCollisionsBottomWall++;
+					if (nCollisionsBottomWall >= 5) {
+						return GameImpl.GameState.LOST;
+					}
+				}
 				System.out.println(colW);
 				changeVelocity(colW);
 				pastColWall = colW;
@@ -90,7 +99,7 @@ public class Ball {
 
 		circle.setTranslateX(x - (circle.getLayoutX() + BALL_RADIUS));
 		circle.setTranslateY(y - (circle.getLayoutY() + BALL_RADIUS));
-
+		return GameImpl.GameState.ACTIVE;
 
 	}
 

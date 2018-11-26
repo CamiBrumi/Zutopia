@@ -118,7 +118,7 @@ public class GameImpl extends Pane implements Game {
 	 */
 	public GameState runOneTimestep (long deltaNanoTime) {
 
-		ball.updatePosition(deltaNanoTime, paddle);
-		return GameState.ACTIVE;
+		return ball.updatePosition(deltaNanoTime, paddle);
+		//return GameState.ACTIVE;
 	}
 }
