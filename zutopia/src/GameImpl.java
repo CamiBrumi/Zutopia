@@ -1,3 +1,4 @@
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.control.Label;
 import javafx.animation.AnimationTimer;
@@ -23,9 +24,15 @@ public class GameImpl extends Pane implements Game {
 	 */
 	public static final int HEIGHT = 600;
 
+	//Constants
+	final Image HORSE = new Image("file:/Users/camibrumar/Documents/CS2102/zutopia/res/horse.jpg"); //(getClass().getResourceAsStream()); //(getFilename())); ("/Users/cadydiehl/Downloads/Project4/horse.jpg"));
+	final Image DUCK = new Image("file:/Users/camibrumar/Documents/CS2102/zutopia/res/duck.jpg"); //(getClass().getResourceAsStream()); //(getFilename())); ("/Users/cadydiehl/Downloads/Project4/horse.jpg"));
+	final Image GOAT = new Image("file:/Users/camibrumar/Documents/CS2102/zutopia/res/goat.jpg"); //(getClass().getResourceAsStream()); //(getFilename())); ("/Users/cadydiehl/Downloads/Project4/horse.jpg"));
+
 	// Instance variables
 	private Ball ball;
 	private Paddle paddle;
+	public ArrayList<Animal> _animals =  new ArrayList<>();
 
 	/**
 	 * Constructs a new GameImpl.
@@ -48,7 +55,7 @@ public class GameImpl extends Pane implements Game {
 		getChildren().clear();  // remove all components from the game
 
 		// Create and add ball
-		ball = new Ball();
+		ball = new Ball(this);
 		getChildren().add(ball.getCircle());  // Add the ball to the game board
 
 		// Create and add animals ...
@@ -71,6 +78,8 @@ public class GameImpl extends Pane implements Game {
 		startLabel.setLayoutY(HEIGHT / 2 + 100);
 		getChildren().add(startLabel);
 
+		displayAnimals();
+
 		// Add event handler to start the game
 		setOnMouseClicked(new EventHandler<MouseEvent> () {
 			@Override
@@ -83,7 +92,15 @@ public class GameImpl extends Pane implements Game {
 			}
 		});
 
-		// Add another event handler to steer paddle...
+		setOnMouseMoved(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				if(e.getX() >= 0 && e.getX() <= WIDTH && e.getY() >= 0 && e.getY() <= HEIGHT) {
+					paddle.moveTo(e.getSceneX(), e.getSceneY());
+				}
+			}
+		});
+
 	}
 
 	/**
@@ -120,5 +137,52 @@ public class GameImpl extends Pane implements Game {
 
 		return ball.updatePosition(deltaNanoTime, paddle);
 		//return GameState.ACTIVE;
+	}
+
+	/**
+	 * Displays the images of the animals in the original format at the beginning of the game
+	 */
+	public void displayAnimals() {
+		Animal horse1 = new Animal(HORSE, "horse", HEIGHT / 20 + 2 * (HEIGHT / 6), WIDTH / 20, 5);
+		Animal horse2 = new Animal(HORSE, "horse", HEIGHT / 20 + 3 * HEIGHT / 20, 5 * WIDTH / 20, 5);
+		Animal horse3 = new Animal(HORSE, "horse", HEIGHT / 20, 10 * WIDTH / 20, 5);
+		Animal horse4 = new Animal(HORSE, "horse", HEIGHT / 20 + 3 * (HEIGHT / 6), 10 * WIDTH / 20, 5);
+		Animal horse5 = new Animal(HORSE, "horse", HEIGHT / 20 + 2 * (HEIGHT / 6), 15 * WIDTH / 20, 5);
+
+		_animals.add(horse1);
+		_animals.add(horse2);
+		_animals.add(horse3);
+		_animals.add(horse4);
+		_animals.add(horse5);
+
+		Animal duck1 = new Animal(DUCK, "duck", HEIGHT / 20, WIDTH / 20, 6);
+		Animal duck2 = new Animal(DUCK, "duck", HEIGHT / 20 + 3 * (HEIGHT / 6), WIDTH / 20, 6);
+		Animal duck3 = new Animal(DUCK, "duck", HEIGHT / 20 + 2 * (HEIGHT / 6), 5 * WIDTH / 20, 6);
+		Animal duck4 = new Animal(DUCK, "duck", HEIGHT / 20 + HEIGHT / 6, 10 * WIDTH / 20, 6);
+		Animal duck5 = new Animal(DUCK, "duck", HEIGHT / 20, 15 * WIDTH / 20, 6);
+		Animal duck6 = new Animal(DUCK, "duck", HEIGHT / 20 + 3 * (HEIGHT / 6), 15 * WIDTH / 20, 6);
+
+		_animals.add(duck1);
+		_animals.add(duck2);
+		_animals.add(duck3);
+		_animals.add(duck4);
+		_animals.add(duck5);
+		_animals.add(duck6);
+
+		Animal goat1 = new Animal(GOAT, "goat", HEIGHT / 20 + HEIGHT / 6, WIDTH / 20, 5);
+		Animal goat2 = new Animal(GOAT, "goat", HEIGHT / 20, 5 * WIDTH / 20, 5);
+		Animal goat3 = new Animal(GOAT, "goat", HEIGHT / 20 + 3 * (HEIGHT / 6), 5 * WIDTH / 20, 5);
+		Animal goat4 = new Animal(GOAT, "goat", HEIGHT / 20 + 2 * (HEIGHT / 6), 10 * WIDTH / 20, 5);
+		Animal goat5 = new Animal(GOAT, "goat", HEIGHT / 20 + HEIGHT / 6, 15 * WIDTH / 20, 5);
+
+		_animals.add(goat1);
+		_animals.add(goat2);
+		_animals.add(goat3);
+		_animals.add(goat4);
+		_animals.add(goat5);
+
+		for(int i = 0; i < _animals.size(); i++) {
+			getChildren().add(_animals.get(i).getImage());
+		}
 	}
 }

@@ -16,11 +16,11 @@ public class Ball {
 	/**
 	 * The initial velocity of the ball in the x direction.
 	 */
-	public static final double INITIAL_VX = 4* 1e-7;
+	public static final double INITIAL_VX = 1e-7;
 	/**
 	 * The initial velocity of the ball in the y direction.
 	 */
-	public static final double INITIAL_VY = 4* 1e-7;
+	public static final double INITIAL_VY = 1e-7;
 
 	// Instance variables
 	// (x,y) is the position of the center of the ball.
@@ -29,6 +29,8 @@ public class Ball {
 	private Circle circle;
 	private String pastColWall; // the wall that the ball has previously collisioned with.
 	private int nCollisionsBottomWall; // the number of collisions with the lower wall.
+	private final GameImpl _gi;
+	private final double VELOCITY_INCREM_MULTIPLIER = 1.2;
 
 	/**
 	 * @return the Circle object that represents the ball on the game board.
@@ -41,7 +43,7 @@ public class Ball {
 	 * Constructs a new Ball object at the centroid of the game board
 	 * with a default velocity that points down and right.
 	 */
-	public Ball() {
+	public Ball(GameImpl gi) {
 		x = GameImpl.WIDTH / 2;
 		y = GameImpl.HEIGHT / 2;
 		vx = INITIAL_VX;
@@ -54,6 +56,8 @@ public class Ball {
 
 		pastColWall = "";
 		nCollisionsBottomWall = 0; // initially the number of times that the ball hit the lower wall is zero.
+		_gi = gi;
+
 	}
 
 	/**
@@ -66,10 +70,12 @@ public class Ball {
 	 * 			we return GameState.ACTIVE.
 	 */
 	public GameImpl.GameState updatePosition(long deltaNanoTime, Paddle paddle) {
+		checkCollisionAnimalAndRemove();
+
 
 		final String colW = collisionWallOrPaddle(paddle);
 		if (!colW.equals("")) {
-			if (!colW.equals(pastColWall)) {
+			if ((colW.equals("P") && pastColWall.equals("P"))  || !colW.equals(pastColWall)) {
 
 				if (colW.equals("D")) {
 					nCollisionsBottomWall++;
@@ -93,6 +99,42 @@ public class Ball {
 		circle.setTranslateY(y - (circle.getLayoutY() + BALL_RADIUS));
 		return GameImpl.GameState.ACTIVE;
 
+	}
+
+	private void checkCollisionAnimalAndRemove() { // TODO: 26/11/2018 finish it
+		//corners of the ball
+		double ballBLx = x - BALL_RADIUS; // bottom left
+		double ballBLy = y + BALL_RADIUS;
+
+		double ballBRx = x + BALL_RADIUS; // bottom right
+		double ballBRy = y + BALL_RADIUS;
+
+		double ballULx = x - BALL_RADIUS; // upper left
+		double ballULy = y - BALL_RADIUS;
+
+		double ballURx = x + BALL_RADIUS; // upper right
+		double ballURy = y - BALL_RADIUS;
+
+		for (Animal a : _gi._animals) {
+			if (ballCornerIsHittingAnimal(ballBLx, ballBLy, a)
+					|| ballCornerIsHittingAnimal(ballBRx, ballBRy, a)
+					|| ballCornerIsHittingAnimal(ballULx, ballULy, a)
+					|| ballCornerIsHittingAnimal(ballURx, ballURy, a)) {
+				a.remove();
+				vx = vx * VELOCITY_INCREM_MULTIPLIER;
+				vy = vy * VELOCITY_INCREM_MULTIPLIER;
+				// TODO: 26/11/2018 after removing an animal just increment the speed of the ball!
+			}
+
+		}
+
+	}
+
+	private boolean ballCornerIsHittingAnimal(double cx, double cy, Animal a) {
+		return (cx >= a._x - a.getImage().getWidth()/2
+				&& cx <= a._x + a.getImage().getWidth()/2
+				&& cy >= a._y - a.getImage().getHeight()/2
+				&& cy <= a._y + a.getImage().getHeight()/2);
 	}
 
 	/**
@@ -125,7 +167,7 @@ public class Ball {
 	private String collisionWallOrPaddle(Paddle paddle) {
 		String collision = "";
 
-		//corners of the paddle
+		//corners of the ball
 		double ballBLx = x - BALL_RADIUS; // bottom left
 		double ballBLy = y + BALL_RADIUS;
 
