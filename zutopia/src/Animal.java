@@ -1,11 +1,5 @@
-import javafx.scene.layout.*;
 import javafx.scene.control.Label;
-import javafx.animation.AnimationTimer;
-import javafx.scene.input.MouseEvent;
-import javafx.event.*;
 import javafx.scene.image.*;
-import javafx.scene.media.*;
-import java.util.*;
 
 public class Animal {
     //Variables

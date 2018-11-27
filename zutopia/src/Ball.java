@@ -1,8 +1,9 @@
-import java.awt.*;
+
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.media.AudioClip;
 
-import static java.lang.StrictMath.sqrt;
+import static java.lang.Math.sqrt;
 
 /**
  * Class that implements a ball with a position and velocity.
@@ -30,7 +31,9 @@ public class Ball {
 	private String pastColWall; // the wall that the ball has previously collisioned with.
 	private int nCollisionsBottomWall; // the number of collisions with the lower wall.
 	private final GameImpl _gi;
-	private final double VELOCITY_INCREM_MULTIPLIER = 1.2;
+	private final double VELOCITY_INCREM_MULTIPLIER = 1.02; // we multiply the speed by this multiplier when the ball hits an animal.
+	private double pastColy;
+	private final double Y_ERROR_PADDLE_COLLISION = 0.1;
 
 	/**
 	 * @return the Circle object that represents the ball on the game board.
@@ -55,6 +58,7 @@ public class Ball {
 		circle.setFill(Color.BLACK);
 
 		pastColWall = "";
+		pastColy = -1;
 		nCollisionsBottomWall = 0; // initially the number of times that the ball hit the lower wall is zero.
 		_gi = gi;
 
@@ -75,15 +79,19 @@ public class Ball {
 
 		final String colW = collisionWallOrPaddle(paddle);
 		if (!colW.equals("")) {
-			if ((colW.equals("P") && pastColWall.equals("P"))  || !colW.equals(pastColWall)) {
+			//System.out.println(colW + " == " + pastColWall);
 
+			if (!colW.equals(pastColWall)
+					|| (colW.equals("P") && pastColWall.equals("P"))) {
+
+				//System.out.println("hello");
 				if (colW.equals("D")) {
 					nCollisionsBottomWall++;
 					if (nCollisionsBottomWall >= 5) {
 						return GameImpl.GameState.LOST;
 					}
 				}
-				System.out.println(colW);
+				//System.out.println(colW);
 				changeVelocity(colW);
 				pastColWall = colW;
 			}
@@ -101,6 +109,14 @@ public class Ball {
 
 	}
 
+	/**
+	 * Checks whether there is a collision between the ball and an animal.
+	 *
+	 * @param deltaNanoTime the number of nanoseconds that have transpired since the last update
+	 * @param paddle the paddle that is in the game.
+	 * @return the state of the game. If the ball hit the lower wall 5 times then we return GameState.LOST. Otherwise
+	 * 			we return GameState.ACTIVE.
+	 */
 	private void checkCollisionAnimalAndRemove() { // TODO: 26/11/2018 finish it
 		//corners of the ball
 		double ballBLx = x - BALL_RADIUS; // bottom left
@@ -116,25 +132,31 @@ public class Ball {
 		double ballURy = y - BALL_RADIUS;
 
 		for (Animal a : _gi._animals) {
+
 			if (ballCornerIsHittingAnimal(ballBLx, ballBLy, a)
 					|| ballCornerIsHittingAnimal(ballBRx, ballBRy, a)
 					|| ballCornerIsHittingAnimal(ballULx, ballULy, a)
 					|| ballCornerIsHittingAnimal(ballURx, ballURy, a)) {
 				a.remove();
+				// we increment the speed of the ball after removing one animal.
 				vx = vx * VELOCITY_INCREM_MULTIPLIER;
 				vy = vy * VELOCITY_INCREM_MULTIPLIER;
-				// TODO: 26/11/2018 after removing an animal just increment the speed of the ball!
+				return;
 			}
 
 		}
 
 	}
 
-	private boolean ballCornerIsHittingAnimal(double cx, double cy, Animal a) {
-		return (cx >= a._x - a.getImage().getWidth()/2
+
+	private boolean ballCornerIsHittingAnimal(double cx, double cy, Animal a) { // TODO: 26/11/2018 the widht and the height methods return 0.
+		//System.out.println("corner " + cx + ", " + cy + " is in a, where " + a._x + ", " +  a._y + " with width " + a.getImage().getMaxHeight() + "and height " + a.getImage().getMaxHeight());
+		return sqrt((cx-a._x)*(cx-a._x) + (cy-a._y)*(cy-a._y)) <= BALL_RADIUS;
+
+		/*return (cx >= a._x - a.getImage().getWidth()/2
 				&& cx <= a._x + a.getImage().getWidth()/2
 				&& cy >= a._y - a.getImage().getHeight()/2
-				&& cy <= a._y + a.getImage().getHeight()/2);
+				&& cy <= a._y + a.getImage().getHeight()/2);*/
 	}
 
 	/**
@@ -185,6 +207,7 @@ public class Ball {
 				|| pointIsInThePaddle(ballULx, ballULy, paddle)
 				|| pointIsInThePaddle(ballURx, ballURy, paddle)) {
 			collision += "P";
+			pastColy = y;
 		}
 
 		if (x + BALL_RADIUS >= GameImpl.WIDTH) { // if the ball hit the right wall
